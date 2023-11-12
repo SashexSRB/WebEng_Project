@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 
 const adminLayout = '../views/layouts/admin';
 const loggedInLayout= '../views/layouts/logged_in';
+const mainLayout = '../views/layouts/main';
 const jwtSecret = process.env.JWT_SECRET;
 
 
@@ -19,7 +20,7 @@ const authMiddleware = (req, res, next) => {
     }
 
     if(!token) {
-        res.render('admin/reject_auth', { locals, localslayout: adminLayout });
+        res.render('admin/reject_auth', { locals, layout: mainLayout });
     } 
 
     try {
@@ -27,7 +28,7 @@ const authMiddleware = (req, res, next) => {
         req.userId = decoded.userId;
         next()
     } catch (error) {
-        res.render('admin/reject_auth', { locals, layout: adminLayout });
+        res.render('admin/reject_auth', { locals, layout: mainLayout });
     }
 }
 
@@ -190,6 +191,7 @@ router.get('/passReset', async(req, res)=> {
             title: "NERVPost",
             description: "NERV's Official Homepage"
         }
+
         res.render('admin/passReset', {
             locals, layout: adminLayout
         });
@@ -198,21 +200,37 @@ router.get('/passReset', async(req, res)=> {
     }
 });
 
-router.post('/reqResetPass', async(req, res) => {
-    const { username, securityCode, password } = req.body;
+router.put('/reqResetPass', async(req, res) => {
     try {
+        const { username, securityCode, password } = req.body;
         const p_securityCode = parseInt(securityCode);
         const user = await User.findOne({ username });
         const hashedPass = await bcrypt.hash(password, 10);
+
         if(p_securityCode === user.securityCode) {
-            user.updateOne({username: username}, {$set:{password: hashedPass}});
+            await User.findByIdAndUpdate(user._id, {
+                password: hashedPass
+            });
+            res.redirect(`/login`);
+        } else {
+            return res.status(401).json({message: "Invalid Security Code"});
+        }
+        
+        /*res.redirect('/');
+
+        if(p_securityCode === user.securityCode) {
+            console.log(user.securityCode);
+            console.log(hashedPass);
+            console.log("1");
+            await user.updateOne({username: username}, {$set:{password: hashedPass}});
+            console.log("2");
         } else {
             res.status(409).json({message: 'User doesnt exist'});
-        }
+        }*/
     } catch (error) {
         console.log(error);
     }
-})
+});
 
 //GET edit post
 router.get('/edit-post/:id', authMiddleware, async (req, res) => {
@@ -263,6 +281,7 @@ router.delete('/delete-post/:id', authMiddleware, async (req, res) => {
 router.get('/logout', (req, res) => {
     res.clearCookie('token');
     res.redirect('/');
+    location.reload();
 });
 
 
