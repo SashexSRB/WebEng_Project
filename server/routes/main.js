@@ -8,33 +8,18 @@ const mainLayout = '../views/layouts/main';
 //Routes
 //Home Route
 
-//check login
-const isLoggedIn = (req, res) => {
-    try {
-        const token = req.cookies.token;
-        console.log(token);
-
-        if(!token) {
-            return false;
-        } else {
-            return true;
-        }
-    } catch (error) {
-        console.log(error);
-    }
-}
-
 router.get('', async (req, res) => {
     try {
+        const token = req.cookies.token;
         const locals = {
             title: "NERVPost",
             description: "NERV's Official Homepage"
         }
         const data  = await Post.find();
-        if(isLoggedIn){
-            res.render('index', { locals, layout: loggedInMainLayout, data });
-        } else {
+        if(!token){
             res.render('index', { locals, layout: mainLayout, data });
+        } else {
+            res.render('index', { locals, layout: loggedInMainLayout, data });;
         }
     } catch (error) {
         console.log(error);
