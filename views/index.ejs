@@ -1,0 +1,21 @@
+<div class="author">
+    <h1 class="author_heading">Welcome to NERVPost</h1>
+    <p class="author_body">NERV's official Homepage and Blogpost</p>
+</div>
+
+<img src="/img/hero_image2.webp" alt="hero" class="hero-image" width="981" height="528">
+
+<section class="posts">
+    <h2 class="posts_heading">Latest Posts</h2>
+
+    <ul class="posts_ul">
+        <% data.forEach(post => { %>
+            <li>
+                <a href="/post/<%= post._id %>">
+                    <span><%= post.title %></span>
+                    <span class="posts_list__date"><%= post.createdAt.toDateString() %></span>
+                </a>
+            </li>
+        <% }) %>
+    </ul>
+</section>
